@@ -1,0 +1,82 @@
+plugins {
+    id 'java-library'
+    id 'application'
+    id 'cpp'
+}
+
+group = 'org.sqteam'
+version = '1.0-SNAPSHOT'
+
+sourceCompatibility = "17"
+targetCompatibility = "17"
+jar.enabled = false
+
+repositories {
+    mavenCentral()
+}
+
+ext.jniHeaders = new File(buildDir, 'generated/jni-headers')
+
+model {
+    platforms {
+        x64 {
+            architecture "x86_64"
+        }
+    }
+
+    components {
+        plugin_native(NativeLibrarySpec) {
+            sources {
+                cpp {
+                    source {
+                        srcDir "src/main/cpp/src"
+                        include '*.cpp'
+                    }
+                    exportedHeaders {
+                        srcDir 'src/main/cpp/include'
+                    }
+
+                }
+            }
+            targetPlatform "x64"
+            binaries.all {
+                def jvmHome = System.properties['java.home']
+                print(jvmHome)
+                //def jvmHome = Jvm.current().javaHome
+                if (targetPlatform.operatingSystem.macOsX) {
+                    cppCompiler.args '-I', "${jvmHome}/include"
+                    cppCompiler.args '-I', "${jvmHome}/include/darwin"
+                    cppCompiler.args '-mmacosx-version-min=10.4'
+                    linker.args '-mmacosx-version-min=10.4'
+                } else if (targetPlatform.operatingSystem.linux) {
+                    cppCompiler.args '-I', "${jvmHome}/include"
+                    cppCompiler.args '-I', "${jvmHome}/include/linux"
+                    cppCompiler.args '-D_FILE_OFFSET_BITS=64'
+                    cppCompiler.args '-std=c++20'
+                } else if (targetPlatform.operatingSystem.windows) {
+                    cppCompiler.args "-I${jvmHome}\\include"
+                    cppCompiler.args "-I${jvmHome}\\include\\win32"
+                    print(cppCompiler.args)
+                } else if (targetPlatform.operatingSystem.freeBSD) {
+                    cppCompiler.args '-I', "${jvmHome}/include"
+                    cppCompiler.args '-I', "${jvmHome}/include/freebsd"
+                }
+            }
+        }
+    }
+}
+compileJava {
+    options.compilerArgs += ["-h", file("src/main/cpp/include")]
+}
+
+
+classes.dependsOn 'plugin_nativeSharedLibrary'
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+
+test {
+    useJUnitPlatform()
+}

@@ -1,0 +1,39 @@
+<idea-plugin>
+    <id>app.shaders.intellij.sdk.intellij-gl-plugin-samples</id>
+    <name>Intellij GL Samples</name>
+    <vendor email="palash@shaders.app" url="http://shaders.app">Shaders</vendor>
+
+    <description><![CDATA[
+    Jetbrains Plugin Samples using openGL canvases.<br>
+    ]]></description>
+
+    <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="org.sqteam.DebugerStartupActivity"/>
+
+
+        <toolWindow id="GL Quad" secondary="true" icon="AllIcons.General.Modified" anchor="right"
+                    factoryClass="org.sqteam.CanvasToolWindowFactory"/>
+
+<!--        <toolWindow id="GL Gears" secondary="true" icon="AllIcons.General.Modified" anchor="right"-->
+<!--                    factoryClass="org.sqteam.CanvasToolWindowFactory"/>-->
+
+<!--        <toolWindow id="GL Empty" secondary="true" icon="AllIcons.General.Modified" anchor="right"-->
+<!--                    factoryClass="org.sqteam.CanvasToolWindowFactory"/>-->
+
+<!--        <toolWindow id="VK Empty" secondary="true" icon="AllIcons.General.Modified" anchor="right"-->
+<!--                    factoryClass="org.sqteam.CanvasToolWindowFactory"/>-->
+
+        <!-- Add your extensions here -->
+    </extensions>
+
+    <actions>
+        <action id="MyAction" text="My Action Name" class="org.sqteam.Action">
+            <synonym text="Another Search Term"/>
+        </action>
+        <!-- Add your actions here -->
+    </actions>
+</idea-plugin>

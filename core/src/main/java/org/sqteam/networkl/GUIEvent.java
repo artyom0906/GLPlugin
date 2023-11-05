@@ -1,0 +1,73 @@
+package org.sqteam.networkl;
+
+import java.nio.ByteBuffer;
+
+public class GUIEvent {
+
+    public GUIEvent(int x, int y, EventType eventType) {
+        this.x = x;
+        this.y = y;
+        this.z = 0;
+        this.eventType = eventType;
+    }
+
+    public GUIEvent(int x, int y, int z, EventType eventType) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.eventType = eventType;
+    }
+
+    public EventType getEventType() {
+        return eventType;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public ByteBuffer serialize() {
+        ByteBuffer buffer = ByteBuffer.allocate(1024);//1+4+4
+        buffer.putInt(x);
+        buffer.putInt(y);
+        buffer.putInt(z);
+        buffer.putInt(eventType.id);
+        System.out.println(("{id:" +eventType.name()+", x:"+x+", y:"+y+", z:"+z+"}\n\r"));
+        //buffer.putInt(eventType.id);
+        //buffer.put(("{id:" +eventType.name()+", x:"+x+", y:"+y+", z:"+z+"}\n\r").getBytes());
+
+        buffer.flip();
+        return buffer;
+    }
+
+    public enum EventType {
+        RESIZE(0),
+        MOUSE_CLICK(1),
+        MOUSE_PRESSED(2),
+        MOUSE_RELEASED(3),
+        MOUSE_WHEEL(4),
+        SCROLL(5),
+        MOUSE_DRAGGED(6),
+        MOUSE_MOVED(7);
+        private final int id;
+        EventType(int id){this.id = id;}
+
+        public int getId() {
+            return id;
+        }
+    }
+
+    private final int x;
+    private final int y;
+    private final int z;
+    private final EventType eventType;
+
+
+
+
+
+}
