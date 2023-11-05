@@ -98,51 +98,18 @@ public class UDPCanvas extends Canvas implements Runnable {
     }
 
     private void init() throws IOException {
+
+        registerListeners();
+
         serverSocket = ServerSocketChannel.open();
 
         serverSocket.socket().bind(new InetSocketAddress("0.0.0.0", 7576));
         System.out.println("waiting for connection");
         client = serverSocket.accept();
         System.out.println("connected");
-        //this.server = DatagramChannel
-        //        .open()
-        //        .bind(new InetSocketAddress("0.0.0.0", 2345));
-        /*
-        ByteBuffer res = ByteBuffer.allocate(1024*1024*4);
-        client.configureBlocking(false);
-        while (true) {
-            ByteBuffer tmp = ByteBuffer.allocate(1024*1024);
+        sendEvent(width, height, GUIEvent.EventType.RESIZE);
+        //sendEvent(width-100, height-100, GUIEvent.EventType.RESIZE);
 
-            int bytesRead = client.read(tmp);
-            if (bytesRead == -1) {
-                break;
-            }
-
-            // rewind ByteBuffer to get it back to start
-            tmp.rewind();
-
-            for (int i = 0; i < bytesRead; i++) {
-                byte cur = tmp.get(i);
-                res.put(cur);
-            }
-
-            // reached end of message, break loop
-            if (bytesRead < 32*1024) {
-                break;
-            }
-        }
-        res.flip();
-        width = res.getShort();
-        height = res.getShort();
-        byte[] data = Arrays.copyOfRange(res.array(), 4, res.array().length);
-        //res.get(data);
-        BufferedImage raw_image = ImageUtil.createImage(width, height, BufferedImage.TYPE_3BYTE_BGR);//new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR)
-        raw_image.setData(Raster.createRaster(raw_image.getSampleModel(), new DataBufferByte(data, data.length), new Point() ) );
-        this.image = raw_image;*/
-
-
-
-        registerListeners();
     }
 
     private void registerListeners() {
@@ -178,12 +145,25 @@ public class UDPCanvas extends Canvas implements Runnable {
             }
         });
         windowContent.addComponentListener(new ComponentAdapter() {
+
+            @Override
+            public void componentShown(ComponentEvent e) {
+                Component c = (Component)e.getSource();
+                try {
+                    sendEvent(c.getWidth()-100, c.getHeight()-100, GUIEvent.EventType.RESIZE);
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+
             @Override
             public void componentResized(ComponentEvent e) {
                 Component c = (Component)e.getSource();
                 try {
-                    client.write(new GUIEvent(c.getWidth()-100, c.getHeight()-100, GUIEvent.EventType.RESIZE).serialize());
-                } catch (IOException ex) {
+                    sendEvent(c.getWidth()-100, c.getHeight()-100, GUIEvent.EventType.RESIZE);
+                    width = c.getWidth()-100;
+                    height = c.getWidth()-100;
+                } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
             }
@@ -195,7 +175,8 @@ public class UDPCanvas extends Canvas implements Runnable {
     }
     private void sendEvent(int x, int y, int z, GUIEvent.EventType eventType) {
         try {
-            client.write(new GUIEvent(x, y, z, eventType).serialize());
+            if (client != null)
+                client.write(new GUIEvent(x, y, z, eventType).serialize());
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -209,9 +190,6 @@ public class UDPCanvas extends Canvas implements Runnable {
         Callable<BufferedImage> callable = ()->{
 
             try {
-                // Make changes to the model which need to be painted
-                //byte[] header = new byte[12];
-                //int l = bufferedInputStream.read(header);//client.socket().getInputStream().readNBytes(10);
                 byte[] header = client.socket().getInputStream().readNBytes(12);
                 ByteBuffer buff = ByteBuffer.allocate(1024);
                 buff.put(header);
@@ -220,116 +198,13 @@ public class UDPCanvas extends Canvas implements Runnable {
                     width = buff.getShort();
                     height = buff.getShort();
                     int length = buff.getInt(8);
-                    //this.setSize(width, height);
 
                     byte[] body = client.socket().getInputStream().readNBytes(length);//new byte[786432];
-                    //l = bufferedInputStream.read(body);
-                    //System.out.println(header.length);
-                    //System.out.println(body.length);
 
                     BufferedImage raw_image = ImageUtil.createImage(width, height, BufferedImage.TYPE_3BYTE_BGR);//new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR)
                     raw_image.setData(Raster.createRaster(raw_image.getSampleModel(), new DataBufferByte(body, body.length), new Point() ) );
-                    //buff = ByteBuffer.allocate(1024);
-                    //buff.put(("ok: " + width + "x" + height + ", data_l: " + body.length + ", length: " +length).getBytes());
-                    //System.out.println("ok: " + width + "x" + height + ", data_l: " + body.length+ ", length: " +length);
-                    //buff.flip();
-                    //client.write(buff);
                     return raw_image;
                 }
-
-                //byte[] header = readFile(client, 10);
-
-                //buff.flip();
-
-
-
-
-                //    byte[] body = readFile(client, 786432);//fix
-
-                //    BufferedImage raw_image = ImageUtil.createImage(width, height, BufferedImage.TYPE_3BYTE_BGR);//new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR)
-                //    raw_image.setData(Raster.createRaster(raw_image.getSampleModel(), new DataBufferByte(body, body.length), new Point() ) );
-                //    buff = ByteBuffer.allocate(1024);
-                //    buff.put(("ok: " + width + "x" + height + ", data_l: " + body.length ).getBytes());
-                //    System.out.println("ok: " + width + "x" + height + ", data_l: " + body.length);
-                //    buff.flip();
-                //    client.write(buff);
-                //    return raw_image;
-                //}
-
-                /*ByteBuffer buff = ByteBuffer.allocate(1024);
-                buff.put("next\n\r".getBytes());
-                client.configureBlocking(true);
-                buff.flip();
-                client.write(buff);
-                ByteBuffer tmp = ByteBuffer.allocate(0x1FFFF);
-                int bytesRead;
-                client.configureBlocking(true);
-                do {
-                    tmp.clear();
-                    bytesRead = client.read(tmp);
-                    tmp.flip();
-
-                }while (tmp.getShort(0) != (short) 0xDEAD);
-                client.configureBlocking(false);
-
-                int length = tmp.getInt(6);
-                ByteBuffer res = ByteBuffer.allocate(length);
-
-                tmp.rewind();
-
-                for (int i = 0; i < bytesRead; i++) {
-                    byte cur = tmp.get(i);
-                    res.put(cur);
-                }
-
-                while (res.hasRemaining()){
-                    if (client.read(res) == -1){
-                        throw new EOFException();
-                    }
-                }*/
-
-                /*do {
-                    // rewind ByteBuffer to get it back to start
-                    tmp.rewind();
-
-                    for (int i = 0; i < bytesRead; i++) {
-                        byte cur = tmp.get(i);
-                        res.put(cur);
-                    }
-
-
-                    tmp = ByteBuffer.allocate(1024 * 1024);
-                    ByteBuffer[] buffers = new ByteBuffer[8];
-                    for(int i = 0; i < 8; i++){
-                        buffers[i] = ByteBuffer.allocate(1024*1024);
-                    }
-
-                    bytesRead = (int) client.read(buffers, 0, length-bytesRead);
-                    if (bytesRead == -1 || bytesRead == 0) {
-                        break;
-                    }
-
-                    // reached end of message, break loop
-                    //if (bytesRead < 32 * 1024) {
-                    //    break;
-                    //}
-                } while (true);*/
-
-                //res.flip();
-                //res.getShort();
-                //width = res.getShort();
-                //height = res.getShort();
-                //int size = res.getInt(6);
-                //res.getShort();
-                //res.getShort();
-                //byte[] data = Arrays.copyOfRange(res.array(), 4, res.array().length);
-                //BufferedImage raw_image = ImageUtil.createImage(width, height, BufferedImage.TYPE_3BYTE_BGR);//new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR)
-                //raw_image.setData(Raster.createRaster(raw_image.getSampleModel(), new DataBufferByte(data, data.length), new Point() ) );
-                //buff = ByteBuffer.allocate(1024);
-                //buff.put(("ok: " + width + "x" + height + ", data_l: " + data.length ).getBytes());
-                //System.out.println("ok: " + width + "x" + height + ", data_l: " + data.length);
-                //buff.flip();
-                //client.write(buff);
 
                 return null;
 
@@ -353,33 +228,6 @@ public class UDPCanvas extends Canvas implements Runnable {
         }
     }
 
-    public static byte[] readFile(SocketChannel channel, Integer length)
-            throws IOException {
-        ByteBuffer dataBuffer = ByteBuffer.allocate(length < 1024 ? length : 1024*1024);
-        int contentLength = 0;
-        int size = -1;
-        byte[] bytes = null;
-        channel.configureBlocking(false);
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        while ((size = channel.read(dataBuffer)) >= 0) {
-            contentLength += size;
-            dataBuffer.flip();
-            bytes = new byte[size];
-            dataBuffer.get(bytes);
-            byteArrayOutputStream.write(bytes);
-            dataBuffer.clear();
-            if (contentLength >= length) {
-                break;
-            }
-        }
-        //channel.configureBlocking(true);
-
-        byte[] byteArray = byteArrayOutputStream.toByteArray();
-        byteArrayOutputStream.close();
-        return byteArray;
-    }
-
-
     public void render() {
         ToolWindowManager.getInstance(project).invokeLater(()-> {
             BufferStrategy bs = getBufferStrategy();
@@ -391,7 +239,7 @@ public class UDPCanvas extends Canvas implements Runnable {
             do {
                 do {
                     Graphics2D g = (Graphics2D) bs.getDrawGraphics();
-                    g.clearRect(0, 0, width, height);
+                    g.clearRect(0, 0, windowContent.getWidth(), windowContent.getHeight());
                     // You MUST clear the page before painting, bad things
                     // happen otherwise
 
@@ -408,16 +256,4 @@ public class UDPCanvas extends Canvas implements Runnable {
             } while (bs.contentsLost());
         });
     }
-
-    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
-    public static String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        for (int j = 0; j < bytes.length; j++) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
-            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
-
 }
