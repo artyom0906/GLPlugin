@@ -14,8 +14,9 @@ import org.jetbrains.annotations.Nullable;
 public class CanvasToolWindowFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        CanvasToolWindow myToolWindow = new CanvasToolWindow(toolWindow, project);
-        ContentFactory contentFactory = ContentFactory.getInstance();
+        //CanvasToolWindow myToolWindow = new CanvasToolWindow(toolWindow, project);
+        //myToolWindow.setWindowContent();
+        //ContentFactory contentFactory = ContentFactory.getInstance();
     project.getMessageBus().connect().subscribe(XDebuggerManager.TOPIC, new XDebuggerManagerListener(){
         @Override
         public void processStarted(@NotNull XDebugProcess debugProcess) {

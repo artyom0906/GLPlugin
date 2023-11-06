@@ -72,6 +72,7 @@ dependencies {
 intellij {
     type = "CL"
     version = 'LATEST-EAP-SNAPSHOT'
+    plugins = ['com.intellij.clion']
 }
 //patchPluginXml {
 //    changeNotes """

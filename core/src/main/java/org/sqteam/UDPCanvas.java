@@ -211,16 +211,16 @@ public class UDPCanvas extends Canvas implements Runnable {
                     int t_width = buff.getShort();
                     int t_height = buff.getShort();
                     int length = buff.getInt(8);
-                    if(t_width != width || t_height != height){
-                        width = t_width;
-                        height = t_height;
-                        repaint.set(true);
-                    }
+                    //if(t_width != width || t_height != height){
+                    //    width = t_width;
+                    //    height = t_height;
+                    //    repaint.set(true);
+                    //}
 
                     byte[] body = client.socket().getInputStream().readNBytes(length);//new byte[786432];
 
                     //windowContent.resize(width, height);
-                    BufferedImage raw_image = ImageUtil.createImage(width, height, BufferedImage.TYPE_3BYTE_BGR);//new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR)
+                    BufferedImage raw_image = ImageUtil.createImage(t_width, t_height, BufferedImage.TYPE_3BYTE_BGR);//new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR)
                     raw_image.setData(Raster.createRaster(raw_image.getSampleModel(), new DataBufferByte(body, body.length), new Point() ) );
                     return raw_image;
                 }
