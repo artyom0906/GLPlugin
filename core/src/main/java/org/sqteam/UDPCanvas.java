@@ -12,11 +12,10 @@ import java.awt.image.*;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.Arrays;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UDPCanvas extends Canvas implements Runnable {
 
@@ -104,11 +103,23 @@ public class UDPCanvas extends Canvas implements Runnable {
         System.out.println("waiting for connection");
         client = serverSocket.accept();
         System.out.println("connected");
-        sendEvent(width, height, GUIEvent.EventType.RESIZE);
+        sendEvent(width, height-100, GUIEvent.EventType.RESIZE);
         //sendEvent(width-100, height-100, GUIEvent.EventType.RESIZE);
     }
 
     private void registerListeners() {
+
+        this.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                sendEvent(e.getX(), e.getY(), e.getButton(), GUIEvent.EventType.MOUSE_DRAGGED);
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                sendEvent(e.getX(), e.getY(), 0, GUIEvent.EventType.MOUSE_MOVED);
+            }
+        });
         this.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -146,7 +157,7 @@ public class UDPCanvas extends Canvas implements Runnable {
             public void componentShown(ComponentEvent e) {
                 Component c = (Component)e.getSource();
                 try {
-                    sendEvent(c.getWidth()-100, c.getHeight()-100, GUIEvent.EventType.RESIZE);
+                    sendEvent(c.getWidth(), c.getHeight()-100, GUIEvent.EventType.RESIZE);
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -156,9 +167,9 @@ public class UDPCanvas extends Canvas implements Runnable {
             public void componentResized(ComponentEvent e) {
                 Component c = (Component)e.getSource();
                 try {
-                    sendEvent(c.getWidth()-100, c.getHeight()-100, GUIEvent.EventType.RESIZE);
-                    width = c.getWidth()-100;
-                    height = c.getWidth()-100;
+                    sendEvent(c.getWidth(), c.getHeight()-100, GUIEvent.EventType.RESIZE);
+                    width = c.getWidth();
+                    height = c.getHeight()-100;
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -179,6 +190,7 @@ public class UDPCanvas extends Canvas implements Runnable {
     }
 
     ExecutorService executor = Executors.newSingleThreadExecutor();
+    AtomicBoolean repaint = new AtomicBoolean(false);
     Future<BufferedImage> bufferedImageFuture;
     public void update() throws ExecutionException, InterruptedException, IOException {
         serverSocket.configureBlocking(false);
@@ -195,12 +207,19 @@ public class UDPCanvas extends Canvas implements Runnable {
                 buff.put(header);
                 buff.flip();
                 if (buff.getShort() == (short)0xDEAD) {
-                    width = buff.getShort();
-                    height = buff.getShort();
+
+                    int t_width = buff.getShort();
+                    int t_height = buff.getShort();
                     int length = buff.getInt(8);
+                    if(t_width != width || t_height != height){
+                        width = t_width;
+                        height = t_height;
+                        repaint.set(true);
+                    }
 
                     byte[] body = client.socket().getInputStream().readNBytes(length);//new byte[786432];
 
+                    //windowContent.resize(width, height);
                     BufferedImage raw_image = ImageUtil.createImage(width, height, BufferedImage.TYPE_3BYTE_BGR);//new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR)
                     raw_image.setData(Raster.createRaster(raw_image.getSampleModel(), new DataBufferByte(body, body.length), new Point() ) );
                     return raw_image;
@@ -218,6 +237,7 @@ public class UDPCanvas extends Canvas implements Runnable {
         }
         if(bufferedImageFuture.isDone()){
             try {
+
                 if(bufferedImageFuture.get() != null){
                     this.image =bufferedImageFuture.get();
                 }
@@ -232,6 +252,12 @@ public class UDPCanvas extends Canvas implements Runnable {
 
     public void render() {
         ToolWindowManager.getInstance(project).invokeLater(()-> {
+
+            if(repaint.get()){
+                this.repaint();
+                windowContent.repaint();
+                repaint.set(false);
+            }
             BufferStrategy bs = getBufferStrategy();
             if (bs == null) {
                 createBufferStrategy(3);
