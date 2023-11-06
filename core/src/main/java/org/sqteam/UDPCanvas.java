@@ -76,6 +76,9 @@ public class UDPCanvas extends Canvas implements Runnable {
 
     public void run() {
         try {
+            registerListeners();
+            serverSocket = ServerSocketChannel.open();
+            serverSocket.socket().bind(new InetSocketAddress("0.0.0.0", 7576));
             init();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -98,18 +101,11 @@ public class UDPCanvas extends Canvas implements Runnable {
     }
 
     private void init() throws IOException {
-
-        registerListeners();
-
-        serverSocket = ServerSocketChannel.open();
-
-        serverSocket.socket().bind(new InetSocketAddress("0.0.0.0", 7576));
         System.out.println("waiting for connection");
         client = serverSocket.accept();
         System.out.println("connected");
         sendEvent(width, height, GUIEvent.EventType.RESIZE);
         //sendEvent(width-100, height-100, GUIEvent.EventType.RESIZE);
-
     }
 
     private void registerListeners() {
@@ -178,15 +174,19 @@ public class UDPCanvas extends Canvas implements Runnable {
             if (client != null)
                 client.write(new GUIEvent(x, y, z, eventType).serialize());
         } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            //throw new RuntimeException(ex);
         }
     }
 
     ExecutorService executor = Executors.newSingleThreadExecutor();
     Future<BufferedImage> bufferedImageFuture;
     public void update() throws ExecutionException, InterruptedException, IOException {
-        //BufferedInputStream bufferedInputStream =
-        //        new BufferedInputStream(client.socket().getInputStream(), 1024*1024*8);
+        serverSocket.configureBlocking(false);
+        SocketChannel clientTmp = serverSocket.accept();
+        if(clientTmp != null) {
+            client.close();
+            client = clientTmp;
+        }
         Callable<BufferedImage> callable = ()->{
 
             try {
@@ -208,7 +208,9 @@ public class UDPCanvas extends Canvas implements Runnable {
 
                 return null;
 
-            }catch (IOException e) {}
+            }catch (IOException e) {
+               // init();
+            }
             return null;
         };
         if(bufferedImageFuture == null){
@@ -220,8 +222,8 @@ public class UDPCanvas extends Canvas implements Runnable {
                     this.image =bufferedImageFuture.get();
                 }
             }catch (Exception e){
-                System.out.println(e);
-                this.bufferedImageFuture = null;
+                System.err.println(e);
+                //init();
             }finally {
                 bufferedImageFuture = executor.submit(callable);
             }

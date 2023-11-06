@@ -21,28 +21,6 @@ public class CanvasToolWindow {
             windowContent.add(udpCanvas);
             udpCanvas.start();
         }catch (Exception ignored) {}
-        windowContent.addComponentListener(new ComponentAdapter() {
-
-            @Override
-            public void componentShown(ComponentEvent e) {
-                System.out.println(e);
-            }
-
-            @Override
-            public void componentResized(ComponentEvent e) {
-                System.out.println(e);
-            }
-
-            @Override
-            public void componentHidden(ComponentEvent e) {
-                System.out.println(e);
-            }
-
-            @Override
-            public void componentMoved(ComponentEvent e) {
-                System.out.println(e);
-            }
-        });
 
         windowContent.add(new JLabel("Hello: " + UUID.randomUUID()));
 
