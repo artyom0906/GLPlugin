@@ -36,7 +36,8 @@ public class GUIEvent {
         buffer.putInt(y);
         buffer.putInt(z);
         buffer.putInt(eventType.id);
-        System.out.println(("{id:" +eventType.name()+", x:"+x+", y:"+y+", z:"+z+"}\n\r"));
+        if(eventType!=EventType.MOUSE_MOVED)
+            System.out.println(("{id:" +eventType.name()+", x:"+x+", y:"+y+", z:"+z+"}\n\r"));
         //buffer.putInt(eventType.id);
         //buffer.put(("{id:" +eventType.name()+", x:"+x+", y:"+y+", z:"+z+"}\n\r").getBytes());
 
@@ -52,7 +53,10 @@ public class GUIEvent {
         MOUSE_WHEEL(4),
         SCROLL(5),
         MOUSE_DRAGGED(6),
-        MOUSE_MOVED(7);
+        MOUSE_MOVED(7),
+        KEY_TYPED(8),
+        KEY_PRESSED(9),
+        KEY_RELEASED(10);
         private final int id;
         EventType(int id){this.id = id;}
 

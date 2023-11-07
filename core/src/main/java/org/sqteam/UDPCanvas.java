@@ -151,6 +151,26 @@ public class UDPCanvas extends Canvas implements Runnable {
                 sendEvent(e.getX(), e.getY(), GUIEvent.EventType.MOUSE_MOVED);
             }
         });
+
+        this.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+                sendEvent(e.getKeyCode(), 0, 0, GUIEvent.EventType.KEY_TYPED);
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                sendEvent(e.getKeyCode(), 0, 0, GUIEvent.EventType.KEY_PRESSED);
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                sendEvent(e.getKeyCode(), 0, 0, GUIEvent.EventType.KEY_RELEASED);
+            }
+        });
+
+        this.addMouseWheelListener(e -> sendEvent(e.getX(), e.getY(), e.getScrollAmount(), GUIEvent.EventType.SCROLL));
         windowContent.addComponentListener(new ComponentAdapter() {
 
             @Override
