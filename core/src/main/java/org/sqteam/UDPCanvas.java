@@ -170,7 +170,7 @@ public class UDPCanvas extends Canvas implements Runnable {
             }
         });
 
-        this.addMouseWheelListener(e -> sendEvent(e.getX(), e.getY(), e.getPreciseWheelRotation(), GUIEvent.EventType.SCROLL));
+        this.addMouseWheelListener(e -> sendEvent(e.getPreciseWheelRotation(), GUIEvent.EventType.SCROLL));
         windowContent.addComponentListener(new ComponentAdapter() {
 
             @Override
@@ -208,10 +208,10 @@ public class UDPCanvas extends Canvas implements Runnable {
             //throw new RuntimeException(ex);
         }
     }
-    private void sendEvent(int x, int y, double z, GUIEvent.EventType eventType) {
+    private void sendEvent(double z, GUIEvent.EventType eventType) {
         try {
             if (client != null)
-                client.write(new GUIEvent(x, y, z, eventType).serialize());
+                client.write(new GUIEvent(z, eventType).serialize());
         } catch (IOException ex) {
             //throw new RuntimeException(ex);
         }
