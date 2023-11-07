@@ -103,7 +103,7 @@ public class UDPCanvas extends Canvas implements Runnable {
         System.out.println("waiting for connection");
         client = serverSocket.accept();
         System.out.println("connected");
-        sendEvent(width, height-100, GUIEvent.EventType.RESIZE);
+        sendEvent(width, height, GUIEvent.EventType.RESIZE);
         //sendEvent(width-100, height-100, GUIEvent.EventType.RESIZE);
     }
 
@@ -187,9 +187,9 @@ public class UDPCanvas extends Canvas implements Runnable {
             public void componentResized(ComponentEvent e) {
                 Component c = (Component)e.getSource();
                 try {
-                    sendEvent(c.getWidth(), c.getHeight()-100, GUIEvent.EventType.RESIZE);
+                    sendEvent(c.getWidth(), c.getHeight(), GUIEvent.EventType.RESIZE);
                     width = c.getWidth();
-                    height = c.getHeight()-100;
+                    height = c.getHeight();
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -226,6 +226,7 @@ public class UDPCanvas extends Canvas implements Runnable {
         if(clientTmp != null) {
             client.close();
             client = clientTmp;
+            sendEvent(width, height, GUIEvent.EventType.RESIZE);
         }
         Callable<BufferedImage> callable = ()->{
 
