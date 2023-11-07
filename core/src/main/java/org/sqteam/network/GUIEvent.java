@@ -1,4 +1,4 @@
-package org.sqteam.networkl;
+package org.sqteam.network;
 
 import java.nio.ByteBuffer;
 

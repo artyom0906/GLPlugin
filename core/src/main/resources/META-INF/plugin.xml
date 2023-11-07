@@ -21,7 +21,7 @@
 
 
         <toolWindow id="GL Quad" secondary="true" icon="AllIcons.General.Modified" anchor="right"
-                    factoryClass="org.sqteam.CanvasToolWindowFactory"/>
+                    factoryClass="org.sqteam.ui.CanvasToolWindowFactory"/>
 
 <!--        <toolWindow id="GL Gears" secondary="true" icon="AllIcons.General.Modified" anchor="right"-->
 <!--                    factoryClass="org.sqteam.CanvasToolWindowFactory"/>-->

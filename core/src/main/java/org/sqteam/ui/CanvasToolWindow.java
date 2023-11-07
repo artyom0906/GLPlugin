@@ -1,15 +1,11 @@
-package org.sqteam;
+package org.sqteam.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.uiDesigner.core.GridConstraints;
-import org.sqteam.networkl.GUIEvent;
+import org.sqteam.network.TCPTransport;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.util.UUID;
 
 public class CanvasToolWindow {
     private final ToolWindow toolWindow;
@@ -26,15 +22,13 @@ public class CanvasToolWindow {
 
     public void setWindowContent(){
         try {
-            UDPCanvas udpCanvas = new UDPCanvas(project, windowContent);
+            UDPCanvas udpCanvas = new UDPCanvas(project, windowContent, new TCPTransport());
             windowContent.add(udpCanvas, new GridConstraints());
             udpCanvas.start();
         }catch (Exception ignored) {
             throw new RuntimeException(ignored);
         }
     }
-
-
 
     public JPanel getContent(){
         return windowContent;

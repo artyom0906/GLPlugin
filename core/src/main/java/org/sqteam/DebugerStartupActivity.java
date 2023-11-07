@@ -18,6 +18,8 @@ import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.sqteam.ui.CanvasToolWindow;
+import org.sqteam.ui.UDPCanvas;
 
 import javax.swing.*;
 import java.util.HashMap;
