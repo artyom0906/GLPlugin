@@ -20,7 +20,7 @@ public class BaseTransportAdapter {
     protected void sendEvent(int x, int y, int z, GUIEvent.EventType eventType) {
         transport.sendEvent(new GUIEvent(x, y, z, eventType));
     }
-    private void sendEvent(double z, GUIEvent.EventType eventType) {
+    protected void sendEvent(double z, GUIEvent.EventType eventType) {
         transport.sendEvent(new GUIEvent(z, eventType));
     }
 }

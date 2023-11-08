@@ -13,7 +13,7 @@ public class MouseListenerTransportAdapter extends BaseTransportAdapter implemen
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        sendEvent(e.getX(), e.getY(), e.getScrollAmount(), GUIEvent.EventType.SCROLL);
+        sendEvent(e.getPreciseWheelRotation(), GUIEvent.EventType.SCROLL);
     }
 
     @Override

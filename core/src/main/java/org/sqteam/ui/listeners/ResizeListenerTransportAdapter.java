@@ -15,7 +15,7 @@ public class ResizeListenerTransportAdapter extends BaseTransportAdapter impleme
 
     @Override
     public void componentResized(ComponentEvent e) {
-        sendEvent(e.getComponent().getWidth(), e.getComponent().getHeight()-100, GUIEvent.EventType.RESIZE);
+        sendEvent(e.getComponent().getWidth(), e.getComponent().getHeight(), GUIEvent.EventType.RESIZE);
     }
 
     @Override
@@ -25,7 +25,7 @@ public class ResizeListenerTransportAdapter extends BaseTransportAdapter impleme
 
     @Override
     public void componentShown(ComponentEvent e) {
-        sendEvent(e.getComponent().getWidth(), e.getComponent().getHeight()-100, GUIEvent.EventType.RESIZE);
+        sendEvent(e.getComponent().getWidth(), e.getComponent().getHeight(), GUIEvent.EventType.RESIZE);
     }
 
     @Override
