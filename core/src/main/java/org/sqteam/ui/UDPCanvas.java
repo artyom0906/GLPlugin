@@ -1,44 +1,39 @@
 package org.sqteam.ui;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.util.ui.ImageUtil;
 import org.sqteam.network.GUIEvent;
 import org.sqteam.network.ImageEventTransport;
-import org.sqteam.network.TCPTransport;
 import org.sqteam.ui.listeners.InputListener;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.*;
-import java.io.*;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.Serial;
 
 public class UDPCanvas extends Canvas implements Runnable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private Thread thread;
     private boolean running = false;
+
+    private static final Logger log = Logger.getInstance(UDPCanvas.class);
     private final ImageEventTransport transport;
         private final InputListener inputListener;
 
     private BufferedImage image;
    private final Project project;
     private final JPanel windowContent;
-    public UDPCanvas(Project project, JPanel windowContent, ImageEventTransport transport) throws IOException {
+    public UDPCanvas(Project project, JPanel windowContent, ImageEventTransport transport){
         this.project = project;
         this.windowContent = windowContent;
         this.transport = transport;
-        this.transport.onConnect((t)->{
-            t.sendEvent(new GUIEvent(windowContent.getWidth(), windowContent.getHeight(), GUIEvent.EventType.RESIZE));
-        });
+        this.transport.onConnect((t)-> t.sendEvent(new GUIEvent(windowContent.getWidth(), windowContent.getHeight(), GUIEvent.EventType.RESIZE)));
         inputListener = new InputListener(transport);
     }
 
@@ -57,34 +52,22 @@ public class UDPCanvas extends Canvas implements Runnable {
     public synchronized void stop() {
         running = false;
         try {
-            thread.join();
-            //serverSocket.close();
-            //client.close();
+            thread.interrupt();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("error stopping: ", e);
+            //e.printStackTrace();
         }
-    }
-    private static String extractMessage(ByteBuffer buffer) {
-        buffer.flip();
-        byte[] bytes = new byte[buffer.remaining()];
-        buffer.get(bytes);
-        String msg = new String(bytes);
-
-        return msg;
     }
 
     public void run() {
-        try {
-            registerListeners();
-            init();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+
+        registerListeners();
+
         while (running) {
             try {
                 update();
             } catch (Exception e) {
-                System.out.println(e);
+                log.error("error update canvas: ", e);
             }
             render();
 
@@ -97,19 +80,10 @@ public class UDPCanvas extends Canvas implements Runnable {
 
     }
 
-    private void init() throws IOException {
-
-        transport.initialize();
-        //transport.sendEvent(new GUIEvent(width, height-100, GUIEvent.EventType.RESIZE));
-        //sendEvent(width-100, height-100, GUIEvent.EventType.RESIZE);
-    }
-
     private void registerListeners() {
         inputListener.registerKeyboardMouseListeners(this);
         inputListener.registerResizeListener(windowContent);
     }
-
-
 
     public void update(){
         try {
@@ -124,12 +98,6 @@ public class UDPCanvas extends Canvas implements Runnable {
 
     public void render() {
         ToolWindowManager.getInstance(project).invokeLater(()-> {
-
-            //if(repaint.get()){
-            //    this.repaint();
-            //    windowContent.repaint();
-            //    repaint.set(false);
-            //}
             BufferStrategy bs = getBufferStrategy();
             if (bs == null) {
                 createBufferStrategy(3);
@@ -142,11 +110,6 @@ public class UDPCanvas extends Canvas implements Runnable {
                     //g.clearRect(0, 0, windowContent.getWidth(), windowContent.getHeight());
                     // You MUST clear the page before painting, bad things
                     // happen otherwise
-
-                    //g.setColor(Color.WHITE);
-                    //g.fillRect(0, 0, getWidth(), getHeight());
-                    //g.setColor(Color.red);
-                    //g.fillRect(10, 50, 50, 70);
                     if(this.image != null) {
                         g.drawImage(image,
                                 (windowContent.getWidth() - image.getWidth()) / 2,

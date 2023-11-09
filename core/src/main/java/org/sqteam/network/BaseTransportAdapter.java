@@ -1,15 +1,7 @@
 package org.sqteam.network;
 
-import com.intellij.openapi.diagnostic.Logger;
-import org.sqteam.network.GUIEvent;
-import org.sqteam.network.ImageEventTransport;
-import org.sqteam.network.TCPTransport;
-
-import java.io.IOException;
-
 public class BaseTransportAdapter {
     private final ImageEventTransport transport;
-    private static final Logger log = Logger.getInstance(TCPTransport.class);
 
     public BaseTransportAdapter(ImageEventTransport transport) {
         this.transport = transport;

@@ -1,5 +1,7 @@
 package org.sqteam.network;
 
+import lombok.Getter;
+
 import java.nio.ByteBuffer;
 
 public class GUIEvent {
@@ -24,18 +26,6 @@ public class GUIEvent {
         this.dz = z;
     }
 
-    public EventType getEventType() {
-        return eventType;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public int getX() {
-        return x;
-    }
-
     public ByteBuffer serialize() {
         ByteBuffer buffer = ByteBuffer.allocate(1024);//1+4+4
         if(dz!=null) {
@@ -47,15 +37,15 @@ public class GUIEvent {
             buffer.putInt(z);
         }
         buffer.putInt(eventType.id);
-        if(eventType!=EventType.MOUSE_MOVED)
+        if(eventType!=EventType.MOUSE_MOVED && eventType!=EventType.SCROLL)
             System.out.println(("{id:" +eventType.name()+", x:"+x+", y:"+y+", z:"+z+"}\n\r"));
-        //buffer.putInt(eventType.id);
-        //buffer.put(("{id:" +eventType.name()+", x:"+x+", y:"+y+", z:"+z+"}\n\r").getBytes());
-
+        if(eventType==EventType.SCROLL)
+            System.out.println("{id:" +eventType.name()+", x:"+dz+"}\n\r");
         buffer.flip();
         return buffer;
     }
 
+    @Getter
     public enum EventType {
         RESIZE(0),
         MOUSE_CLICK(1),
@@ -71,9 +61,6 @@ public class GUIEvent {
         private final int id;
         EventType(int id){this.id = id;}
 
-        public int getId() {
-            return id;
-        }
     }
 
     private final int x;

@@ -4,7 +4,6 @@ import org.sqteam.network.BaseTransportAdapter;
 import org.sqteam.network.GUIEvent;
 import org.sqteam.network.ImageEventTransport;
 
-import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 

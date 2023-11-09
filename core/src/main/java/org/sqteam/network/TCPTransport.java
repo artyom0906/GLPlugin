@@ -1,7 +1,6 @@
 package org.sqteam.network;
 
 import com.intellij.util.ui.ImageUtil;
-import lombok.extern.log4j.Log4j2;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -9,13 +8,13 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.Raster;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import com.intellij.openapi.diagnostic.Logger;
 
@@ -23,7 +22,7 @@ public class TCPTransport implements ImageEventTransport {
     ServerSocketChannel serverSocket;
     private SocketChannel client;
     BufferedImage image;
-    Consumer<ImageEventTransport> connectFn;
+    List<Consumer<ImageEventTransport>> connectFn = new ArrayList<>();
 
     private static final Logger log = Logger.getInstance(TCPTransport.class);
 
@@ -35,25 +34,21 @@ public class TCPTransport implements ImageEventTransport {
 
 
     @Override
-    public void initialize() {
-    }
-
-    SocketChannel connect() throws IOException{
+    public void connect() throws IOException{
         System.out.println("waiting for connection");
         client = serverSocket.accept();
         System.out.println("connected");
-        connectFn.accept(this);
-        return client;
+        connectFn.forEach(e->e.accept(this));
     }
     synchronized SocketChannel getConnection()throws IOException{
-        while(client == null) {
+        while(client == null || !client.isConnected()) {
             connect();
         }
         return client;
     }
     @Override
     public void onConnect(Consumer<ImageEventTransport> f){
-        connectFn = f;
+        connectFn.add(f);
     }
 
     @Override
@@ -74,7 +69,7 @@ public class TCPTransport implements ImageEventTransport {
     private BufferedImage receiveImage(){
         while(true){
             try {
-                try {
+                try{
                     var sock = getConnection().socket();
                     byte[] header = sock.getInputStream().readNBytes(12);
                     ByteBuffer buff = ByteBuffer.allocate(1024);
@@ -87,7 +82,6 @@ public class TCPTransport implements ImageEventTransport {
                         int length = buff.getInt(8);
                         byte[] body = sock.getInputStream().readNBytes(length);//new byte[786432];
 
-                        //windowContent.resize(width, height);
                         BufferedImage raw_image = ImageUtil.createImage(t_width, t_height, BufferedImage.TYPE_3BYTE_BGR);//new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR)
                         raw_image.setData(Raster.createRaster(raw_image.getSampleModel(), new DataBufferByte(body, body.length), new Point()));
                         return raw_image;
@@ -109,7 +103,7 @@ public class TCPTransport implements ImageEventTransport {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     Future<BufferedImage> bufferedImageFuture;
     @Override
-    public BufferedImage getImage() throws IOException {
+    public BufferedImage getImage(){
             if(bufferedImageFuture == null){
                 bufferedImageFuture = executor.submit(this::receiveImage);
             }
@@ -119,7 +113,7 @@ public class TCPTransport implements ImageEventTransport {
                         this.image =bufferedImageFuture.get();
                     }
                 }catch (Exception e){
-                    System.err.println(e);
+                    log.error( "error getting image", e);
                 }finally {
                     bufferedImageFuture = executor.submit(this::receiveImage);
                 }

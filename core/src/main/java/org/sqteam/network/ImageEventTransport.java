@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 
 public interface ImageEventTransport {
 
-    void initialize() throws IOException;
+    void connect() throws IOException;
     void sendEvent(GUIEvent event);
     public void onConnect(Consumer<ImageEventTransport> fn);
     BufferedImage getImage() throws IOException;
