@@ -24,9 +24,6 @@ public class UDPCanvas extends Canvas implements Runnable {
 
     private static final long serialVersionUID = 1L;
 
-    private int width = 1000;
-    private int height = 1000;
-
     private Thread thread;
     private boolean running = false;
     private final ImageEventTransport transport;
@@ -39,12 +36,15 @@ public class UDPCanvas extends Canvas implements Runnable {
         this.project = project;
         this.windowContent = windowContent;
         this.transport = transport;
+        this.transport.onConnect((t)->{
+            t.sendEvent(new GUIEvent(windowContent.getWidth(), windowContent.getHeight(), GUIEvent.EventType.RESIZE));
+        });
         inputListener = new InputListener(transport);
     }
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(width, height);
+        return this.windowContent.getSize();
     }
 
     public synchronized void start() {
@@ -100,7 +100,7 @@ public class UDPCanvas extends Canvas implements Runnable {
     private void init() throws IOException {
 
         transport.initialize();
-        transport.sendEvent(new GUIEvent(width, height-100, GUIEvent.EventType.RESIZE));
+        //transport.sendEvent(new GUIEvent(width, height-100, GUIEvent.EventType.RESIZE));
         //sendEvent(width-100, height-100, GUIEvent.EventType.RESIZE);
     }
 
@@ -113,9 +113,10 @@ public class UDPCanvas extends Canvas implements Runnable {
 
     public void update(){
         try {
-            this.image = transport.getImage();
-            this.width = image.getWidth();
-            this.height = image.getHeight();
+            var img = transport.getImage();
+            if(img != null) {
+                this.image = img;
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -138,7 +139,7 @@ public class UDPCanvas extends Canvas implements Runnable {
             do {
                 do {
                     Graphics2D g = (Graphics2D) bs.getDrawGraphics();
-                    g.clearRect(0, 0, windowContent.getWidth(), windowContent.getHeight());
+                    //g.clearRect(0, 0, windowContent.getWidth(), windowContent.getHeight());
                     // You MUST clear the page before painting, bad things
                     // happen otherwise
 
@@ -147,7 +148,12 @@ public class UDPCanvas extends Canvas implements Runnable {
                     //g.setColor(Color.red);
                     //g.fillRect(10, 50, 50, 70);
                     if(this.image != null) {
-                        g.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
+                        g.drawImage(image,
+                                (windowContent.getWidth() - image.getWidth()) / 2,
+                                (windowContent.getHeight() - image.getHeight()) / 2,
+                                image.getWidth(),
+                                image.getHeight(),
+                                null);
                     }
                     g.dispose();
                 } while (bs.contentsRestored());
