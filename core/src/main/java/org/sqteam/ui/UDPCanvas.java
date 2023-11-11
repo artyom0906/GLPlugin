@@ -53,6 +53,7 @@ public class UDPCanvas extends Canvas implements Runnable {
         running = false;
         try {
             thread.interrupt();
+            transport.close();
         } catch (Exception e) {
             log.error("error stopping: ", e);
             //e.printStackTrace();

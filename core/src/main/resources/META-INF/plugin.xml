@@ -13,15 +13,16 @@
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.xdebugger</depends>
     <depends>com.intellij.clion</depends>
-    <depends>com.intellij.modules.cidr.debugger</depends>
     <depends>com.intellij.cidr.base</depends>
+    <depends>com.intellij.modules.cidr.debugger</depends>
+
 
     <extensions defaultExtensionNs="com.intellij">
         <postStartupActivity implementation="org.sqteam.DebugerStartupActivity"/>
 
 
-        <toolWindow id="GL Quad" secondary="true" icon="AllIcons.General.Modified" anchor="right"
-                    factoryClass="org.sqteam.ui.CanvasToolWindowFactory"/>
+<!--        <toolWindow id="GL Quad" secondary="true" icon="AllIcons.General.Modified" anchor="right"-->
+<!--                    factoryClass="org.sqteam.ui.CanvasToolWindowFactory"/>-->
 
 <!--        <toolWindow id="GL Gears" secondary="true" icon="AllIcons.General.Modified" anchor="right"-->
 <!--                    factoryClass="org.sqteam.CanvasToolWindowFactory"/>-->
@@ -36,9 +37,12 @@
     </extensions>
 
     <actions>
-        <action id="MyAction" text="My Action Name" class="org.sqteam.Action">
-            <synonym text="Another Search Term"/>
+        <action id="VisualiseObject" class="VisualiseObject" text="Visualise Object" description="Visualise object in 3d view">
+<!--            <add-to-group group-id="Debugger.FramePanelPopup" anchor="last"/>-->
+            <add-to-group group-id="XDebugger.ValueGroup" anchor="after"
+            relative-to-action="EvaluateExpression"/>
+            <add-to-group group-id="EditorPopupMenuDebug" anchor="after"
+                          relative-to-action="EvaluateExpression"/>
         </action>
-        <!-- Add your actions here -->
     </actions>
 </idea-plugin>

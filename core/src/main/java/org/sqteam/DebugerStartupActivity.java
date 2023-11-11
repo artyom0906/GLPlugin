@@ -12,6 +12,10 @@ import com.intellij.xdebugger.*;
 import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.frame.*;
 import com.intellij.xdebugger.frame.presentation.XValuePresentation;
+import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration;
+import com.jetbrains.cidr.cpp.toolchains.CPPToolSet;
+import com.jetbrains.cidr.cpp.toolchains.CPPToolchains;
+import com.jetbrains.cidr.lang.workspace.OCWorkspace;
 import kotlin.Unit;
 import kotlin.coroutines.Continuation;
 import kotlin.jvm.functions.Function1;
@@ -22,15 +26,17 @@ import org.sqteam.ui.CanvasToolWindow;
 import org.sqteam.ui.UDPCanvas;
 
 import javax.swing.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class DebugerStartupActivity implements ProjectActivity {
     private void attachDebugStartListener(Project project) {
 
         project.getMessageBus().connect().subscribe(XDebuggerManager.TOPIC, new XDebuggerManagerListener() {
             Map<XDebugProcess, ToolWindow> toolWindows = new HashMap<>();
+
 
             @Override
             public void currentSessionChanged(@Nullable XDebugSession previousSession, @Nullable XDebugSession currentSession) {
@@ -39,6 +45,24 @@ public class DebugerStartupActivity implements ProjectActivity {
 
             @Override
             public void processStarted(@NotNull XDebugProcess debugProcess) {
+
+                //var a = CMakeAppRunConfiguration.getSelectedRunConfiguration(project);
+                var a = CPPToolchains.getInstance().getDefaultToolchain();
+                assert a != null;
+                switch (a.getToolSetKind()){
+                    case SYSTEM_UNIX_TOOLSET -> {}
+                    case SYSTEM_WINDOWS_TOOLSET -> {}
+                    case WSL -> {}
+                    case SSH -> {}
+                    case DOCKER -> {}
+                    case MSVC -> {}
+                    case MINGW -> {}
+                    case CYGWIN -> {}
+                    default -> {}
+                }
+
+                var configs = OCWorkspace.getInstance(project).getConfigurations();
+
                 RegisterToolWindowTaskBuilder taskBuilder = new RegisterToolWindowTaskBuilder("debug_visual"+ toolWindows.size());
                 Function1<RegisterToolWindowTaskBuilder, Unit> f = registerToolWindowTaskBuilder -> {
                     registerToolWindowTaskBuilder.anchor = ToolWindowAnchor.RIGHT;
@@ -47,6 +71,21 @@ public class DebugerStartupActivity implements ProjectActivity {
                 };
 
                 final boolean[] visualizerStarted = {false};
+
+                try {
+                    Stream<NetworkInterface> interfaceList = Collections.list(NetworkInterface.getNetworkInterfaces()).stream();
+                    interfaceList.filter(networkInterface -> {
+                        try {
+                            return networkInterface.isUp();
+                        } catch (SocketException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                            .peek(System.err::println)
+                            .forEach(i-> System.err.println(i.getInterfaceAddresses()));
+                } catch (SocketException e) {
+                    throw new RuntimeException(e);
+                }
 
                 debugProcess.getSession().addSessionListener(new XDebugSessionListener(){
                     @Override
@@ -245,7 +284,7 @@ public class DebugerStartupActivity implements ProjectActivity {
 
                 ToolWindowManager.getInstance(project).invokeLater(()-> {
                     ToolWindow toolWindow = ToolWindowManager.getInstance(project).registerToolWindow("debug visual" + (toolWindows.isEmpty() ? "" : toolWindows.size()) , f);
-                    CanvasToolWindow myToolWindow = new CanvasToolWindow(toolWindow, project);
+                    CanvasToolWindow myToolWindow = new CanvasToolWindow(project);
                     myToolWindow.setWindowContent();
                     ContentFactory contentFactory = ContentFactory.getInstance();
                     toolWindow.getContentManager().addContent(contentFactory.createContent(myToolWindow.getContent(), "", false));

@@ -120,4 +120,10 @@ public class TCPTransport implements ImageEventTransport {
             }
         return image;
     }
+
+    @Override
+    public void close() throws IOException {
+        client.close();
+        serverSocket.close();
+    }
 }

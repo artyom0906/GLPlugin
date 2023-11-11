@@ -1,5 +1,6 @@
 package org.sqteam.ui;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -8,15 +9,12 @@ import org.sqteam.network.TCPTransport;
 import javax.swing.*;
 
 public class CanvasToolWindow {
-    private final ToolWindow toolWindow;
     private final Project project;
     private JPanel windowContent;
+    private static final Logger log = Logger.getInstance(CanvasToolWindow.class);
 
-    public CanvasToolWindow(ToolWindow toolWindow, Project project) {
+    public CanvasToolWindow(Project project) {
 
-        //windowContent = new JPanel();
-
-        this.toolWindow = toolWindow;
         this.project = project;
     }
 
@@ -25,8 +23,8 @@ public class CanvasToolWindow {
             UDPCanvas udpCanvas = new UDPCanvas(project, windowContent, new TCPTransport());
             windowContent.add(udpCanvas, new GridConstraints());
             udpCanvas.start();
-        }catch (Exception ignored) {
-            throw new RuntimeException(ignored);
+        }catch (Exception e) {
+            log.error("CanvasToolWindow", e);
         }
     }
 
