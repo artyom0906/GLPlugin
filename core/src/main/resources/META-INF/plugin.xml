@@ -21,6 +21,9 @@
         <postStartupActivity implementation="org.sqteam.DebugerStartupActivity"/>
 
 
+        <projectService serviceInterface="org.sqteam.service.VisualDebugSessionManger"
+                        serviceImplementation="org.sqteam.service.VisualDebugSessionMangerImpl"/>
+
 <!--        <toolWindow id="GL Quad" secondary="true" icon="AllIcons.General.Modified" anchor="right"-->
 <!--                    factoryClass="org.sqteam.ui.CanvasToolWindowFactory"/>-->
 
@@ -35,6 +38,7 @@
 
         <!-- Add your extensions here -->
     </extensions>
+
 
     <actions>
         <action id="VisualiseObject" class="VisualiseObject" text="Visualise Object" description="Visualise object in 3d view">

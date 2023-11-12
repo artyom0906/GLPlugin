@@ -15,6 +15,7 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import com.intellij.openapi.diagnostic.Logger;
 
@@ -24,21 +25,28 @@ public class TCPTransport implements ImageEventTransport {
     BufferedImage image;
     List<Consumer<ImageEventTransport>> connectFn = new ArrayList<>();
 
+    AtomicBoolean isConnect = new AtomicBoolean(true);
+
+    private final ExecutorService executor;
+
     private static final Logger log = Logger.getInstance(TCPTransport.class);
 
 
-    public TCPTransport() throws IOException {
+    public TCPTransport(int port, ExecutorService executor) throws IOException {
+        this.executor = executor;
         serverSocket = ServerSocketChannel.open();
-        serverSocket.socket().bind(new InetSocketAddress("0.0.0.0", 7576));
+        serverSocket.socket().bind(new InetSocketAddress("0.0.0.0", port));
     }
 
 
     @Override
     public void connect() throws IOException{
-        System.out.println("waiting for connection");
-        client = serverSocket.accept();
-        System.out.println("connected");
-        connectFn.forEach(e->e.accept(this));
+        if(isConnect.get()) {
+            System.out.println("waiting for connection");
+            client = serverSocket.accept();
+            System.out.println("connected");
+            connectFn.forEach(e -> e.accept(this));
+        }
     }
     synchronized SocketChannel getConnection()throws IOException{
         while(client == null || !client.isConnected()) {
@@ -94,13 +102,13 @@ public class TCPTransport implements ImageEventTransport {
                 }
             }
             catch (IOException e) {
-                log.error( "error receiving image", e);
+                log.info( "error receiving image", e);
                 return null;
             }
         }
     }
 
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+
     Future<BufferedImage> bufferedImageFuture;
     @Override
     public BufferedImage getImage(){
@@ -123,6 +131,7 @@ public class TCPTransport implements ImageEventTransport {
 
     @Override
     public void close() throws IOException {
+        isConnect.set(false);
         client.close();
         serverSocket.close();
     }

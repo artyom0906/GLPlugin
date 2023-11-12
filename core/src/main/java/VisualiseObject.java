@@ -103,9 +103,9 @@ public class VisualiseObject extends XDebuggerActionBase {
                                 System.err.println("result: " + result);
 
                                 StringBuilder sb = new StringBuilder();
-                                sb.append("A<");
+                                sb.append("(void)'plugin::renderer<");
                                 sb.append(result.toString().substring(result.toString().indexOf(":")+1));
-                                sb.append(" >::add(");
+                                sb.append(" >::add'(");
                                 sb.append(text);
                                 sb.append(")");
 

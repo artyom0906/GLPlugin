@@ -37,10 +37,10 @@ public class GUIEvent {
             buffer.putInt(z);
         }
         buffer.putInt(eventType.id);
-        if(eventType!=EventType.MOUSE_MOVED && eventType!=EventType.SCROLL)
-            System.out.println(("{id:" +eventType.name()+", x:"+x+", y:"+y+", z:"+z+"}\n\r"));
-        if(eventType==EventType.SCROLL)
-            System.out.println("{id:" +eventType.name()+", x:"+dz+"}\n\r");
+        //if(eventType!=EventType.MOUSE_MOVED && eventType!=EventType.SCROLL)
+        //    System.out.println(("{id:" +eventType.name()+", x:"+x+", y:"+y+", z:"+z+"}\n\r"));
+        //if(eventType==EventType.SCROLL)
+        //    System.out.println("{id:" +eventType.name()+", x:"+dz+"}\n\r");
         buffer.flip();
         return buffer;
     }
