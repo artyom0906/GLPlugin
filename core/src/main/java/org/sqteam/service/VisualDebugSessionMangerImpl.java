@@ -60,14 +60,13 @@ public class VisualDebugSessionMangerImpl implements VisualDebugSessionManger {
                     VisualEvaluator e = new VisualEvaluator(process, debugerExecutorService);
                     e.onError(System.err::println);
                     e.addNext(new XExpressionImpl("((void*(*)(const char*, int))dlopen)(\"./build/libtest.so\", 1)", Language.ANY, ""));
-                    StringBuilder s = new StringBuilder();
-                    s.append("(void)'plugin::open'( \"");
-                    s.append(switch (Objects.requireNonNull(CPPToolchains.getInstance().getDefaultToolchain()).getToolSetKind()){
-                        case WSL->"172.21.240.1";
-                        default ->"127.0.0.1";
-                    });
-                    s.append("\", \"+ port +\")");
-                    e.addNext(new XExpressionImpl(s.toString(), Language.ANY, ""));
+                    String s = "(void)'plugin::open'( \"" +
+                            switch (Objects.requireNonNull(CPPToolchains.getInstance().getDefaultToolchain()).getToolSetKind()) {
+                                case WSL -> "172.21.240.1";
+                                default -> "127.0.0.1";
+                            } +
+                            "\", "+ port +")";
+                    e.addNext(new XExpressionImpl(s, Language.ANY, ""));
                     e.run();
                     visualizerStarted = true;
                             /*Objects.requireNonNull(debugProcess.getEvaluator()).evaluate("((void*(*)(const char*, int))dlopen)(\"./libtest.so\", 1)", new XDebuggerEvaluator.XEvaluationCallback() {
