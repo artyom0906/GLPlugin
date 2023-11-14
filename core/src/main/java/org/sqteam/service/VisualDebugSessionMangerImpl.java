@@ -2,6 +2,7 @@ package org.sqteam.service;
 
 import com.intellij.lang.Language;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -192,13 +193,38 @@ public class VisualDebugSessionMangerImpl implements VisualDebugSessionManger {
                     }
             );
             CanvasToolWindow myToolWindow = new CanvasToolWindow(project, finalTransport);
-            myToolWindow.setWindowContent();
+            myToolWindow.addOnRendererChoose(f->{
+                this.onRendererChoose(f, process);
+            });
+
             ContentFactory contentFactory = ContentFactory.getInstance();
             toolWindow.getContentManager().addContent(contentFactory.createContent(myToolWindow.getContent(), "", false));
             toolWindow.activate(() -> {
             });
             sessionMap.put(process, new VisualDebugSession(finalTransport, toolWindow));
         });
+    }
+
+    private void onRendererChoose(VirtualFile[] virtualFiles, XDebugProcess process) {
+        VisualEvaluator e = new VisualEvaluator(process, debugerExecutorService);
+        e.onError(System.err::println);
+        for (VirtualFile virtualFile : virtualFiles) {
+            System.out.println(virtualFile);
+            e.addNext(new XExpressionImpl("((void*(*)(const char*, int))dlopen)(\""+getPathToElement(virtualFile)+"\", 1)", Language.ANY, ""));
+        }
+        e.run();
+    }
+    private String getPathToElement(VirtualFile virtualFile){
+        if (virtualFile == null) return null;
+        String presentableUrl = virtualFile.getPresentableUrl();
+        //presentableUrl = presentableUrl.substring(0, presentableUrl.lastIndexOf("."));
+        //presentableUrl is like: D:\research\wslpath\filename.txt
+        //we want to convert it to /mnt/d/research/wslpath/filename.txt, D is upper case, need to convert to lower case
+        String path = presentableUrl.substring(0, 2).toLowerCase() + presentableUrl.substring(2);
+        return switch (Objects.requireNonNull(CPPToolchains.getInstance().getDefaultToolchain()).getToolSetKind()) {
+            case WSL -> "/mnt/" + path.replace("\\", "/").replace(":", "");
+            default -> presentableUrl;
+        };
     }
 
     @Override

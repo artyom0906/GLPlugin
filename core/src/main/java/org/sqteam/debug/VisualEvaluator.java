@@ -34,10 +34,14 @@ public class VisualEvaluator{
     }
 
     private Runnable nextTask(){
+
+        System.out.println("submitting:" + expressionQueue.peek());
         return ()->{
             Objects.requireNonNull(debugProcess.getEvaluator()).evaluate(Objects.requireNonNull(expressionQueue.poll()), new XDebuggerEvaluator.XEvaluationCallback() {
                 @Override
                 public void evaluated(@NotNull XValue result) {
+                    System.out.println("result: " + result );
+                    if(expressionQueue.peek()==null) return;
                     executor.submit(nextTask());
                 }
 
@@ -50,6 +54,7 @@ public class VisualEvaluator{
     }
 
     public void run(){
+
         executor.submit(nextTask());
     }
 }

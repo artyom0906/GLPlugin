@@ -1,0 +1,3 @@
+[submodule "lib/core-lib/src/cpp"]
+	path = lib/core-lib/src/cpp
+	url = https://github.com/feedab1e/visualizer-plugin.git

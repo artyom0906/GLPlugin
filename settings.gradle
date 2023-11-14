@@ -1,3 +1,6 @@
 rootProject.name = "GLPlugin"
 
 include ":core", ":lib"
+include 'lib:core-lib'
+findProject(':lib:core-lib')?.name = 'core-lib'
+

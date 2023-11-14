@@ -101,8 +101,10 @@ public class UDPCanvas extends Canvas implements Runnable {
         ToolWindowManager.getInstance(project).invokeLater(()-> {
             BufferStrategy bs = getBufferStrategy();
             if (bs == null) {
-                createBufferStrategy(3);
-                return;
+                try {
+                    createBufferStrategy(3);
+                }catch (Exception ignored) {}
+                    return;
             }
 
             do {
@@ -114,7 +116,7 @@ public class UDPCanvas extends Canvas implements Runnable {
                     if(this.image != null) {
                         g.drawImage(image,
                                 (windowContent.getWidth() - image.getWidth()) / 2,
-                                (windowContent.getHeight() - image.getHeight()) / 2,
+                                0,//(windowContent.getHeight() - image.getHeight()) / 2,
                                 image.getWidth(),
                                 image.getHeight(),
                                 null);
