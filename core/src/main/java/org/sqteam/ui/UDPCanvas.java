@@ -3,6 +3,7 @@ package org.sqteam.ui;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindowManager;
+import org.jetbrains.annotations.NotNull;
 import org.sqteam.network.GUIEvent;
 import org.sqteam.network.ImageEventTransport;
 import org.sqteam.ui.listeners.InputListener;
@@ -35,6 +36,16 @@ public class UDPCanvas extends Canvas implements Runnable {
         this.transport = transport;
         this.transport.onConnect((t)-> t.sendEvent(new GUIEvent(windowContent.getWidth(), windowContent.getHeight(), GUIEvent.EventType.RESIZE)));
         inputListener = new InputListener(transport);
+    }
+
+    @Override
+    public Dimension getSize() {
+        return windowContent.getSize();
+    }
+
+    @Override
+    public void setSize(@NotNull Dimension d) {
+        windowContent.setSize(d);
     }
 
     @Override

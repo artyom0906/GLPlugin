@@ -60,7 +60,7 @@ public class VisualDebugSessionMangerImpl implements VisualDebugSessionManger {
                 if (!visualizerStarted) {
                     VisualEvaluator e = new VisualEvaluator(process, debugerExecutorService);
                     e.onError(System.err::println);
-                    e.addNext(new XExpressionImpl("((void*(*)(const char*, int))dlopen)(\"./build/libtest.so\", 1)", Language.ANY, ""));
+                    e.addNext(new XExpressionImpl("((void*(*)(const char*, int))dlopen)(\"../library/libvisualizer-plugin.so\", 1)", Language.ANY, ""));
                     String s = "(void)'plugin::open'( \"" +
                             switch (Objects.requireNonNull(CPPToolchains.getInstance().getDefaultToolchain()).getToolSetKind()) {
                                 case WSL -> "172.21.240.1";
@@ -222,7 +222,7 @@ public class VisualDebugSessionMangerImpl implements VisualDebugSessionManger {
         //we want to convert it to /mnt/d/research/wslpath/filename.txt, D is upper case, need to convert to lower case
         String path = presentableUrl.substring(0, 2).toLowerCase() + presentableUrl.substring(2);
         return switch (Objects.requireNonNull(CPPToolchains.getInstance().getDefaultToolchain()).getToolSetKind()) {
-            case WSL -> "/mnt/" + path.replace("\\", "/").replace(":", "");
+            case WSL -> path.replace("\\", "/").replace(":", "");
             default -> presentableUrl;
         };
     }
